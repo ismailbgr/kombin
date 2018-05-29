@@ -16,10 +16,24 @@
 	<div id="color1" class="color1"></div>
 	<div id="color2" class="color2"></div>
 </div>
-<button onclick="saveTrainingData(1)">✓</button><button onclick="saveTrainingData(0)">✕</button>
+<button class="btn-start" onclick="saveTrainingData(0)">0</button><button onclick="saveTrainingData(0.2)">1</button><button onclick="saveTrainingData(0.4)">2</button><button onclick="saveTrainingData(0.6)">3</button><button onclick="saveTrainingData(0.8)">4</button><button class="btn-end" onclick="saveTrainingData(1)">5</button>
+<p><button onclick="sonuc()">Sonuçları Göster</button></p>
 <p><button onclick="localStorage.trainingData = [];alert('Sıfırlandı');location.reload()">Sıfırla</button></p>
 <div id="themes"></div>
 <style type="text/css">
+.btn-start{
+border-top-left-radius: 20px;
+border-bottom-left-radius: 20px;
+}
+.btn-end{
+border-top-right-radius: 20px;
+border-bottom-right-radius: 20px;
+}
+#themes{
+  overflow: scroll;
+  display: flex;
+  flex-direction: row;
+}
 #tanıtım{
   background:linear-gradient(black,gray);
     border:solid black 3px;
@@ -27,12 +41,20 @@
   overflow: hidden;
 }
 #colorholder{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border:solid black 3px;
   border-radius: 20px;
   overflow: hidden;
 }
-	button{font-size: 50px;}
-	.color1, .color2{padding: 20px;}
+	button{font-size: 50px;
+margin: 0;
+border-radius: 0.1px;
+background-color: cyan;
+}
+	.color1, .color2{padding: 50px;
+}
   body{
     text-align: center;
    // background-color: black;
@@ -43,6 +65,7 @@
     border-radius: 20px;
     background-color: rgb(15, 5, 38);
     overflow: hidden;
+    margin:5px;
   }
 </style>
 <script type="text/javascript">
@@ -76,10 +99,13 @@ function saveTrainingData(score) {
   window.localStorage.trainingData = JSON.stringify(data)
 
 
-  predictThemeCombinations()
+  //predictThemeCombinations()
   generateRandomTheme()
 }
 
+function sonuc(){
+  predictThemeCombinations()
+}
 
 function generateRandomTheme() {
 	currentColors.bir = getRandomRgb();
