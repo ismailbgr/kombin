@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Yapay Zeka İle Renk Kombini Bulma</title>
+<script type="text/javascript" src="browser.min.js"></script>
+</head>
+<body>
+  <div id="tanıtım">
+  <h1>Yapay Zeka İle Renk Kombini Bulma</h1>
+  <h2>Nasıl Kullanılır</h2>
+  <p>Üstteki renk üstümüze giydiğimiz alttaki renk altımıza giydiğimiz rengi temsil ediyor bu kombinleri oyladığınızda size 20 tane tahmin veriliyor</p>
+  <p>(Düzgün Tahminler İçin En Az 10 Tane Oylamanız Önerilir)</p>
+  <p>by İsmail Buğra Öz</p>
+</div>
+<div id="colorholder">
+	<div id="color1" class="color1"></div>
+	<div id="color2" class="color2"></div>
+</div>
+<button class="btn-start" onclick="saveTrainingData(0)">0</button><button onclick="saveTrainingData(0.2)">1</button><button onclick="saveTrainingData(0.4)">2</button><button onclick="saveTrainingData(0.6)">3</button><button onclick="saveTrainingData(0.8)">4</button><button class="btn-end" onclick="saveTrainingData(1)">5</button>
+<p><button onclick="sonuc()">Sonuçları Göster</button></p>
+<p><button onclick="localStorage.trainingData = [];alert('Sıfırlandı');location.reload()">Sıfırla</button></p>
+<div id="themes"></div>
+<style type="text/css">
+.btn-start{
+border-top-left-radius: 20px;
+border-bottom-left-radius: 20px;
+}
+.btn-end{
+border-top-right-radius: 20px;
+border-bottom-right-radius: 20px;
+}
+#themes{
+  overflow: scroll;
+  display: flex;
+  flex-direction: row;
+}
+#tanıtım{
+  background:linear-gradient(black,gray);
+    border:solid black 3px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+#colorholder{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border:solid black 3px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+	button{font-size: 50px;
+margin: 0;
+border-radius: 0.1px;
+background-color: cyan;
+}
+	.color1, .color2{padding: 50px;
+}
+  body{
+    text-align: center;
+   // background-color: black;
+    color:white;
+  }
+  .tabela{
+    border:solid red 1px;
+    border-radius: 20px;
+    background-color: rgb(15, 5, 38);
+    overflow: hidden;
+    margin:5px;
+  }
+</style>
+<script type="text/javascript">
+const color1 = document.querySelectorAll(".color1");
+const color2 = document.querySelectorAll(".color2");
+const themes = document.getElementById('themes');
+
+window.localStorage.trainingData = window.localStorage.trainingData || JSON.stringify([]);
+
+var currentColors = {
+	bir: {},
+	iki: {},
+}
+
+
+function saveTrainingData(score) {
+  const data = JSON.parse(window.localStorage.trainingData)
+
+  data.push({
+    input: [
+	  Math.round(currentColors.bir.r/2.55) / 100,
+      Math.round(currentColors.bir.g/2.55) / 100,
+      Math.round(currentColors.bir.b/2.55) / 100,
+      Math.round(currentColors.iki.r/2.55) / 100,
+      Math.round(currentColors.iki.g/2.55) / 100,
+      Math.round(currentColors.iki.b/2.55) / 100,
+    ],
+    output: [score]
+  })
+
+  window.localStorage.trainingData = JSON.stringify(data)
+
+
+  //predictThemeCombinations()
+  generateRandomTheme()
+}
+
+function sonuc(){
+  predictThemeCombinations()
+}
+
+function generateRandomTheme() {
+	currentColors.bir = getRandomRgb();
+	currentColors.iki = getRandomRgb();
+
+	document.getElementById("color1").style.background = `rgb(${currentColors.bir.r},${currentColors.bir.g},${currentColors.bir.b})`
+	document.getElementById("color2").style.background = `rgb(${currentColors.iki.r},${currentColors.iki.g},${currentColors.iki.b})`
+}
+
+
+function getRandomRgb() {
+  return {
+    r: Math.round(Math.random()*205),
+    g: Math.round(Math.random()*205),
+    b: Math.round(Math.random()*205),
+  }
+}
+
+
+function predictThemeCombinations() {
+  const data = JSON.parse(window.localStorage.trainingData)
+  if (!data.length) {
+    return;
+  }
+
+  themes.innerHTML = ""
+  const net = new brain.NeuralNetwork({activation: "leaky-relu"});
+  const results = []
+
+  net.train(data)
+
+  for (let i = 0; i < 1000000; i++) {
+    const one = getRandomRgb()
+    const two = getRandomRgb()
+    const colors = [
+      Math.round(one.r/2.55) / 100,
+      Math.round(one.g/2.55) / 100,
+      Math.round(one.b/2.55) / 100,
+      Math.round(two.r/2.55) / 100,
+      Math.round(two.g/2.55) / 100,
+      Math.round(two.b/2.55) / 100,
+    ]
+
+    const [ score ] = net.run(colors)
+    results.push({one, two, score})
+  }
+
+  // sort results
+  const sortedResults = results.sort(function(a, b) {
+    var a = a.score
+    var b = b.score
+
+    return b - a
+  })
+
+  // keep the top 20 results!
+  for (let i = 0; i < 20; i++) {
+    addNewTheme(sortedResults[i])
+  }
+}
+
+function addNewTheme({one, two, score}) {
+  const newTheme = document.createElement("div")
+  newTheme.classList.add("predicted-theme")
+  newTheme.innerHTML = `
+  <div class="tabela">
+<div class="color1" style="background:rgb(${one.r}, ${one.g}, ${one.b})"></div>
+<div class="color2" style="background:rgb(${two.r}, ${two.g}, ${two.b})"></div
+
+  </div>
+  <p>Skor ${score}</p>
+  <p>Renk 1 rgb(${one.r}, ${one.g}, ${one.b})</p>
+  <p>Renk 2 rgb(${two.r}, ${two.g}, ${two.b})</p>
+  
+  `
+  themes.appendChild(newTheme)
+}
+
+
+generateRandomTheme()
+predictThemeCombinations()
+
+</script>
+</body>
+</html>
