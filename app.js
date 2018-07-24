@@ -15,9 +15,9 @@ var app = new Framework7({
   // Add default routes
   routes: [
   {
-      name: 'signup',
-      path: '/signup/',
-      url: 'signup.html',
+      name: 'changelog',
+      path: '/changelog/',
+      url: 'changelog.html',
     },
 
   
@@ -93,7 +93,11 @@ function saveTrainingData(score) {
 
 function sonuc(){
   app.dialog.preloader("Yükleniyor");
-  predictThemeCombinations()
+  
+  setTimeout(function() {
+    predictThemeCombinations()
+    app.dialog.close();
+  },1000)
   
 }
 
@@ -156,7 +160,7 @@ function predictThemeCombinations() {
     addNewTheme(sortedResults[i])
   }
 
-app.dialog.close();
+
 
 }
 
@@ -183,4 +187,4 @@ function addNewTheme({one, two, score}) {
 
 
 generateRandomTheme()
-predictThemeCombinations()
+//predictThemeCombinations()
